@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Parte de Incidencias — Ruta de Campo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#181f26;
+    --paper:#eef1ef;
+    --paper2:#ffffff;
+    --line:#c7cdc9;
+    --orange:#ff5a1f;
+    --teal:#0d5c56;
+    --amber:#e8a400;
+    --danger:#c8393a;
+    --ok:#2f7d4f;
+    --shadow: 0 1px 0 rgba(0,0,0,.04);
+    --radius: 2px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 8px 0, transparent 6px, var(--paper) 6px) 0 0/20px 20px repeat-x,
+      var(--paper);
+    font-family:'Inter',system-ui,sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    padding-bottom:110px;
+  }
+  .sheet{ max-width:560px; margin:0 auto; padding:0 16px; }
+
+  header.ticket{
+    background:var(--ink); color:var(--paper);
+    margin:0 -16px 18px; padding:22px 16px 26px;
+    position:relative; border-bottom:2px dashed rgba(255,255,255,.25);
+  }
+  header.ticket::after{
+    content:""; position:absolute; left:0;right:0;bottom:-9px; height:18px;
+    background-image: radial-gradient(circle at center, var(--paper) 8px, transparent 8.5px);
+    background-size: 24px 18px; background-repeat: repeat-x; background-position: 4px 0;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--orange); display:flex;justify-content:space-between; margin-bottom:10px;
+  }
+  h1{ font-family:'Oswald',sans-serif; font-weight:700; font-size:26px; letter-spacing:.01em; text-transform:uppercase; margin:0 0 4px; }
+  .sub-row{ display:flex;justify-content:space-between;align-items:flex-end; font-size:13px;color:rgba(238,241,239,.7); }
+  .odometer{
+    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:20px; color:var(--paper);
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.2);
+    padding:4px 10px; border-radius:var(--radius); letter-spacing:.05em;
+  }
+  .odometer span{color:var(--orange);}
+
+  section.card{ background:var(--paper2); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; margin-bottom:14px; }
+  .card-title{ font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#6b746e; margin:0 0 12px; display:flex;align-items:center;gap:8px; }
+  .card-title .n{ background:var(--ink);color:var(--paper); width:18px;height:18px;border-radius:50%; display:inline-flex;align-items:center;justify-content:center; font-size:10px; }
+  label{ display:block; font-size:12.5px; font-weight:600; margin:0 0 6px; color:#3a423c; }
+  .field{margin-bottom:14px;}
+  .field:last-child{margin-bottom:0;}
+  input[type=text], input[type=date], input[type=number], input[type=search], textarea, select{
+    width:100%; font-family:'Inter',sans-serif; font-size:15px; padding:11px 12px;
+    border:1.5px solid var(--line); border-radius:var(--radius); background:var(--paper2); color:var(--ink);
+    -webkit-appearance:none; appearance:none;
+  }
+  input:focus, textarea:focus, select:focus{ outline:none; border-color:var(--ink); }
+  textarea{min-height:70px;resize:vertical;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+  /* Cliente autocomplete */
+  .combo{position:relative;}
+  .combo-results{
+    position:absolute; left:0;right:0; top:calc(100% + 4px); z-index:15;
+    background:var(--paper2); border:1.5px solid var(--ink); border-radius:var(--radius);
+    max-height:260px; overflow-y:auto; box-shadow:0 6px 18px rgba(0,0,0,.15); display:none;
+  }
+  .combo-results.show{display:block;}
+  .combo-item{ padding:10px 12px; cursor:pointer; border-bottom:1px solid var(--line); }
+  .combo-item:last-child{border-bottom:none;}
+  .combo-item:hover, .combo-item.hi{background:var(--paper);}
+  .combo-item .nm{font-weight:600;font-size:13.5px;}
+  .combo-item .meta{font-size:11px;color:#6b746e;margin-top:1px;}
+  .combo-empty{padding:12px;font-size:12.5px;color:#6b746e;}
+
+  .client-card{
+    margin-top:10px; padding:10px 12px; background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
+    display:none; font-size:12.5px;
+  }
+  .client-card.show{display:block;}
+  .client-card .cc-name{font-weight:700;font-size:14px;margin-bottom:4px;}
+  .client-card .cc-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+  .cc-tag{background:var(--ink);color:var(--paper);padding:3px 9px;border-radius:10px;font-size:11px;font-weight:600;}
+  .cc-tag.zona{background:var(--teal);}
+  .link-toggle{background:none;border:none;color:var(--teal);font-weight:700;font-size:12px;cursor:pointer;padding:0;margin-top:8px;}
+  .manual-zone{display:none;margin-top:10px;}
+  .manual-zone.show{display:block;}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{
+    border:1.5px solid var(--line); background:var(--paper2); padding:9px 14px; border-radius:20px;
+    font-size:13.5px; font-weight:600; cursor:pointer; user-select:none; transition:transform .08s ease;
+  }
+  .chip:active{transform:scale(.96);}
+  .chip.sel{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .chip.add{ border-style:dashed; color:#6b746e; }
+  .chip-scroll{max-height:220px;overflow-y:auto;padding:2px;}
+  .search-mini{margin-bottom:10px;}
+  .search-mini input{padding:9px 11px;font-size:13.5px;}
+  .count-tag{font-size:11px;color:#8a9089;font-weight:500;margin-left:6px;}
+
+  .stamps{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .stamp{
+    border:2.5px solid var(--ink); border-radius:var(--radius); padding:14px 8px; text-align:center;
+    font-family:'Oswald',sans-serif; font-weight:600; font-size:14.5px; text-transform:uppercase; letter-spacing:.03em;
+    cursor:pointer; background:var(--paper2); position:relative;
+  }
+  .stamp small{display:block;font-family:'Inter',sans-serif;font-weight:400;text-transform:none;font-size:10.5px;color:#6b746e;letter-spacing:0;margin-top:2px;}
+  .stamp[data-type="averiado"].sel{background:var(--danger);border-color:var(--danger);color:#fff;transform:rotate(-1.5deg);}
+  .stamp[data-type="vencido"].sel{background:var(--amber);border-color:var(--amber);color:#1b1400;transform:rotate(1.5deg);}
+  .stamp[data-type="faltante"].sel{background:var(--teal);border-color:var(--teal);color:#fff;transform:rotate(-1deg);}
+  .stamp[data-type="otro"].sel{background:#4a4f57;border-color:#4a4f57;color:#fff;transform:rotate(1deg);}
+  .stamp[data-type="averiado"].sel small, .stamp[data-type="faltante"].sel small, .stamp[data-type="otro"].sel small{color:rgba(255,255,255,.75);}
+
+  .conditional{ margin-top:14px; padding-top:14px; border-top:1px dashed var(--line); display:none; }
+  .conditional.show{display:block;}
+
+  .severity{display:flex;gap:8px;}
+  .sev{ flex:1;text-align:center;padding:8px 4px;border:1.5px solid var(--line);border-radius:var(--radius); font-size:12.5px;font-weight:600;cursor:pointer; }
+  .sev[data-lvl="leve"].sel{background:#fde9b0;border-color:var(--amber);}
+  .sev[data-lvl="moderada"].sel{background:#ffd0b0;border-color:var(--orange);}
+  .sev[data-lvl="grave"].sel{background:#f3b3b3;border-color:var(--danger);}
+
+  .photo-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .photo-add{ width:84px;height:84px; border:2px dashed var(--line); border-radius:var(--radius);
+    display:flex;flex-direction:column;align-items:center;justify-content:center; color:#6b746e;font-size:11px;font-weight:600;cursor:pointer;gap:4px; text-align:center; }
+  .photo-thumb{ width:84px;height:84px;position:relative;border-radius:var(--radius);overflow:hidden;border:1.5px solid var(--line); }
+  .photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .photo-thumb .rm{ position:absolute;top:2px;right:2px;background:rgba(0,0,0,.65);color:#fff; width:20px;height:20px;border-radius:50%;border:none;font-size:13px;line-height:1;cursor:pointer; }
+  .geo-btn{ width:100%;padding:11px;border:1.5px solid var(--line);border-radius:var(--radius); background:var(--paper2);font-weight:600;font-size:13.5px;cursor:pointer; display:flex;align-items:center;justify-content:center;gap:8px; }
+  .geo-btn.ok{border-color:var(--ok);color:var(--ok);background:#eaf5ee;}
+
+  .actionbar{ position:fixed;left:0;right:0;bottom:0; background:var(--ink); padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    display:flex;gap:10px; box-shadow:0 -4px 14px rgba(0,0,0,.15); z-index:20; }
+  .actionbar .max{max-width:560px;margin:0 auto;width:100%;display:flex;gap:10px;}
+  .btn-save{ flex:1; background:var(--orange);color:#fff;border:none; font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.03em;
+    font-size:15px;padding:14px;border-radius:var(--radius);cursor:pointer; }
+  .btn-save:disabled{background:#5b5f57;color:#a8aca6;cursor:not-allowed;}
+  .btn-hist{ background:transparent;border:1.5px solid rgba(255,255,255,.3);color:var(--paper); font-weight:600;font-size:13px;padding:14px 16px;border-radius:var(--radius);cursor:pointer; white-space:nowrap; }
+
+  #histSection{display:none;}
+  .hist-item{ display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line); }
+  .hist-item:last-child{border-bottom:none;}
+  .hist-thumb{width:52px;height:52px;border-radius:var(--radius);object-fit:cover;flex-shrink:0;background:#dfe3e0;}
+  .hist-body{flex:1;min-width:0;}
+  .hist-top{display:flex;justify-content:space-between;gap:6px;}
+  .hist-cliente{font-weight:700;font-size:13.5px;}
+  .badge{ font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase; padding:2px 7px;border-radius:10px;font-weight:700;letter-spacing:.03em;white-space:nowrap;height:fit-content; }
+  .badge.averiado{background:var(--danger);color:#fff;}
+  .badge.vencido{background:var(--amber);color:#1b1400;}
+  .badge.faltante{background:var(--teal);color:#fff;}
+  .badge.otro{background:#4a4f57;color:#fff;}
+  .hist-meta{font-size:12px;color:#6b746e;margin-top:2px;}
+  .hist-del{background:none;border:none;color:#a03030;font-size:11px;font-weight:700;cursor:pointer;padding:0;margin-top:4px;}
+  .hist-empty{font-size:13px;color:#6b746e;text-align:center;padding:16px 0;}
+  .toolbar-hist{display:flex;justify-content:space-between;align-items:center;}
+  .link-btn{background:none;border:none;color:var(--teal);font-weight:700;font-size:12.5px;cursor:pointer;}
+  .toast{ position:fixed;left:50%;bottom:100px;transform:translateX(-50%) translateY(20px); background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:20px;
+    font-size:13px;font-weight:600;opacity:0;transition:all .25s ease;z-index:30;pointer-events:none; }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .hint{font-size:11.5px;color:#8a9089;margin-top:4px;}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header class="ticket">
+    <div class="eyebrow"><span>PARTE DE INCIDENCIAS · CAMPO</span><span id="hoyLabel">--</span></div>
+    <h1>Registro de incidencia</h1>
+    <div class="sub-row">
+      <span>Portafolio completo · <span id="marcasCount">0</span> marcas</span>
+      <span class="odometer"><span id="contadorHoy">0</span> hoy</span>
+    </div>
+  </header>
+
+  <form id="incForm" autocomplete="off">
+
+    <section class="card">
+      <p class="card-title"><span class="n">1</span>Visita</p>
+      <div class="field">
+        <label for="fecha">Fecha de la visita</label>
+        <input type="date" id="fecha" required>
+      </div>
+      <div class="field combo">
+        <label for="cliente">Cliente / Punto de venta</label>
+        <input type="text" id="cliente" placeholder="Buscá por nombre... (549 clientes cargados)" required>
+        <div class="combo-results" id="clienteResults"></div>
+      </div>
+      <div class="client-card" id="clientCard">
+        <div class="cc-name" id="ccName"></div>
+        <div class="cc-tags">
+          <span class="cc-tag zona" id="ccZona"></span>
+          <span class="cc-tag" id="ccEstado"></span>
+          <span class="cc-tag" id="ccCanal"></span>
+          <span class="cc-tag" id="ccTipo"></span>
+        </div>
+      </div>
+      <button type="button" class="link-toggle" id="toggleManual">+ Este cliente no está en la lista</button>
+      <div class="manual-zone" id="manualZone">
+        <div class="field" style="margin-top:10px;">
+          <label>Zona / Ruta de este cliente nuevo</label>
+          <div class="chips" id="zonaChips"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <p class="card-title"><span class="n">2</span>Producto <span class="count-tag" id="marcaTotal"></span></p>
+      <div class="field">
+        <label>Marca</label>
+        <div class="search-mini"><input type="search" id="marcaSearch" placeholder="Filtrar marca..."></div>
+        <div class="chips chip-scroll" id="marcaChips"></div>
+      </div>
+      <div class="field">
+        <label>Producto</label>
+        <div class="search-mini" id="productoSearchWrap" style="display:none;"><input type="search" id="productoSearch" placeholder="Filtrar producto..."></div>
+        <div class="chips chip-scroll" id="productoChips"><span class="hint">Elegí una marca primero.</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <p class="card-title"><span class="n">3</span>Tipo de incidencia</p>
+      <div class="stamps" id="stampGroup">
+        <div class="stamp" data-type="averiado">Averiado<small>daño físico</small></div>
+        <div class="stamp" data-type="vencido">Vencido<small>fuera de fecha</small></div>
+        <div class="stamp" data-type="faltante">Faltante<small>stock/entrega</small></div>
+        <div class="stamp" data-type="otro">Otro<small>describir</small></div>
+      </div>
+
+      <div class="conditional" id="cond-averiado">
+        <div class="field">
+          <label>Tipo de daño</label>
+          <select id="tipoDano">
+            <option value="golpeado">Golpeado / abollado</option>
+            <option value="roto">Roto / quebrado</option>
+            <option value="fuga">Fuga / derrame</option>
+            <option value="sucio">Empaque sucio o dañado</option>
+            <option value="otro">Otro daño</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Severidad</label>
+          <div class="severity">
+            <div class="sev" data-lvl="leve">Leve</div>
+            <div class="sev" data-lvl="moderada">Moderada</div>
+            <div class="sev" data-lvl="grave">Grave</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="conditional" id="cond-vencido">
+        <div class="row2">
+          <div class="field">
+            <label for="fechaVenc">Fecha de vencimiento</label>
+            <input type="date" id="fechaVenc">
+          </div>
+          <div class="field">
+            <label for="lote">Lote (opcional)</label>
+            <input type="text" id="lote" placeholder="Ej. L-2309">
+          </div>
+        </div>
+      </div>
+
+      <div class="conditional" id="cond-faltante">
+        <div class="field">
+          <label for="cantFaltante">Cantidad faltante</label>
+          <input type="number" id="cantFaltante" min="0" placeholder="Ej. 12">
+        </div>
+      </div>
+
+      <div class="conditional" id="cond-otro">
+        <div class="field">
+          <label for="otroDesc">Describí la incidencia</label>
+          <textarea id="otroDesc" placeholder="¿Qué pasó?"></textarea>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:14px;">
+        <label for="cantidad">Cantidad de unidades afectadas</label>
+        <input type="number" id="cantidad" min="0" placeholder="Ej. 3">
+      </div>
+      <div class="field">
+        <label for="notas">Notas adicionales</label>
+        <textarea id="notas" placeholder="Contexto para el supervisor..."></textarea>
+      </div>
+    </section>
+
+    <section class="card">
+      <p class="card-title"><span class="n">4</span>Evidencia fotográfica</p>
+      <div class="photo-row" id="photoRow">
+        <label class="photo-add">
+          📷<span>Tomar foto</span>
+          <input type="file" accept="image/*" capture="environment" id="photoInput" style="display:none;">
+        </label>
+      </div>
+      <p class="hint">Podés agregar hasta 3 fotos como evidencia.</p>
+    </section>
+
+    <section class="card">
+      <p class="card-title"><span class="n">5</span>Ubicación (opcional)</p>
+      <button type="button" class="geo-btn" id="geoBtn">📍 Capturar ubicación actual</button>
+    </section>
+
+  </form>
+
+  <section class="card" id="histSection">
+    <div class="toolbar-hist">
+      <p class="card-title" style="margin-bottom:0;"><span class="n">✓</span>Incidencias registradas</p>
+      <button class="link-btn" id="exportBtn">Exportar CSV</button>
+    </div>
+    <div id="histList"></div>
+  </section>
+
+</div>
+
+<div class="actionbar">
+  <div class="max">
+    <button type="button" class="btn-hist" id="toggleHist">Historial</button>
+    <button type="button" class="btn-save" id="saveBtn" disabled>Guardar incidencia</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, doc, addDoc, deleteDoc, setDoc, updateDoc,
+  onSnapshot, query, orderBy, arrayUnion
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// ============================================================
+// 1) PEGÁ ACÁ TU CONFIGURACIÓN DE FIREBASE (ver instrucciones)
+// ============================================================
+const firebaseConfig = {
+  apiKey: "PEGAR_AQUI",
+  authDomain: "PEGAR_AQUI",
+  projectId: "PEGAR_AQUI",
+  storageBucket: "PEGAR_AQUI",
+  messagingSenderId: "PEGAR_AQUI",
+  appId: "PEGAR_AQUI"
+};
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+const incidenciasCol = collection(db, 'incidencias');
+const catalogoExtraRef = doc(db, 'catalogo', 'extra');
+
+// Compresor de fotos: reduce el tamaño antes de guardar en Firestore
+function comprimirFoto(dataUrl, maxAncho=900, calidad=0.6){
+  return new Promise((resolve)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const scale = Math.min(1, maxAncho / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', calidad));
+    };
+    img.onerror = ()=>resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+const SEED_CATALOG = {"marcas":{"ALOKADOS":["ALOKADOS CARAMEL BLANDO CAFE20X100X4G(B)","ALOKADOS CARAMEL BLANDO MENT20X100X4G(B)","ALOKADOS CARAMEL BLANDO RON 20X100X4G(B)","ALOKADOS CARAMEL BLANDO SURT20X100X4G(B)"],"AMATIC":["AMATIC JB ESP ANTIBAC MYSTIC 12X270ML(B)","AMATIC JB ESP ANTIBAC VIOLET12X270ML(B)"],"AMAZONA":["AMAZONA ALMOHADA DOBLE X 2UND (D)"],"BARRILETE":["BARRILETE CHUPETA 15X24X19GR(B)"],"BIANCHI":["BIANCHI BARRA DOBLE CHOCO 12X12X22G (B)","BIANCHI CARAMEL CHOC BLANC 18X100X4G (B)","BIANCHI CARAMELO CHOCOLATE 18X100X4G (B)","BIANCHI CHOCOBOMBOM SURT 18X30X6G (B)","BIANCHI CHOCOBOMBON PAS-FRU18X30X6G (B)","BIANCHI CHOCOCOCO 12X12X25GR (B)","BIANCHI CHOCOLORES 12X12X30GR (B)","BIANCHI CRUNCHY CHOCO BLANC 12X12X25G(B)","BIANCHI CRUNCHY CHOCO OSCU 12X12X25GR(B)"],"BIANCHI SNACKS":["BIANCHI SNACKS CHOCOLORES 24X50G (B)","BIANCHI SNACKS ENCANTO FRESA 24X60G (B)","BIANCHI SNACKS SURTIDOS 12 X (40-55)GR (B)"],"BIG BOM":["BALL XXL CHICLE MORA AZUL 14X50X10GR(B)","BIG BOM BABY CARITAS FELICES 16X48X8G (B)","BIG BOM BABY PINTALABIOS 16X48X8G (B)","BIG BOM MARACUYA 8X48X23G(B)","BIG BOM WHITE 8X48X23G(B)","BIG BOM XXL BLACK SAB FRESA 8X48X23G(B)","BIG BOM XXL BOMBONERA FRESA 6X80X23G (B)","BIG BOM XXL COLA POP NEG/ROJ 8X48X23G(B)","BIG BOM XXL DIAMANTE 8X48X23G (B)","BIG BOM XXL FRESA 8X48X23G (B)","BIG BOM XXL FRESH AIR 8X48X23G (B)","BIG BOM XXL FRUTOS ROJOS 8X48X23G (B)","BIG BOM XXL FUSION 8X48X23G (B)","BIG BOM XXL MOUTH PAINT BLUE 8X48X23G(B)","BIG BOM XXL MOUTH PAINTER 8X48X23G (B)","BIG BOM XXL SANDIA 8X48X23G (B)","BIG BOM XXL SCHOOL 8X48X23G (B)","BIG BOM XXL SPACE 8X48X23GR (B)","BIG BOM XXL TATAMA CHERRY 8X48X23G (B)","BIG BOM XXL THE COOLEST 8X48X23GR(B)","BIG BOM XXL TRIO SENSACIONES 8X48X23G(B)","BIG BOM XXL TROPICAL CREAM 8X48X23G (B)","BIG BOM XXL YOGURT FRESA 8X48X23G (B)","BIG BOM XXL YOGURT MORA 8X48X23G (B)","BIG BOM XXL ZOMBIE 8X48X23GR (B)"],"BOMBAZO":["BOMBAZO CHICLE BOMBA 24X50X5GR (B)"],"CAFE GURME":["CAFE GURME CARAMEL MASTIC 36X50X5.5G (B)"],"CATATUMBO":["CATATUMBO LECHE POLVO 12X380g (B)<E>","CATATUMBO LECHE POLVO 12X900g (B)<E>","CATATUMBO LECHE POLVO 24X125g (B) <E>"],"CHAO":["CHAO CARAMELO FRESA 24X100X3.5G (B)","CHAO CARAMELO FRESA LINEA 12X24X14G (B)","CHAO CARAMELO MENTA 24X100X3.5G (B)","CHAO CARAMELO MENTA LINEA 12X24X14G (B)","CHAO CARAMELO MORA AZUL 24X100X3.5G (B)","CHAO CARAMELO SANDIA 24X100X3.5G (B)","CHAO CARAMELO SANDIA LINEA 12X24X14G (B)","CHAO FRESA X2 18X100X5.6G (B)","CHAO LINEA SURTIDO 12X24X14GR (B)","CHAO MENTA X2 18X100X5.6G (B)","CHAO MORA AZUL X2 18X100X5.6G (B)","CHAO SANDIA X2 18X100X5.6G (B)","CHAO TUBO FRESA-LIMON 12X12X11UND (B)"],"CHOCO BUBBLE":["CHOCO BUBBLE 12X30GR (D)"],"CICI":["CHOCCO TABLET 24X18GR (D)","DOPINGO CARAMEL 24X20GR (D)","DOPINGO MANI 24X20GR (D)","FLASH BAG (MIX) BOMBONES 1KG (D)","GUSTO CROISSANT CHOCOLATE 24X45GR (D)","GUSTO MIDI ROLL CARAMELO 24X40GR (D)","GUSTO PIE MARSHMALLOW 24X50GR (D)","GUSTO PUFFIES COOKIES&CREAM 24X45GR (D)","GUSTO PUFFIES VANILLA 24X45GR (D)","GUSTO SNOWY COCONUT 24X50GR (D)","GUSTO TRIO CHOCOLATE 24X45GR (D)","GUSTO WAFER HAZELNUT 24X40GR (D)","GUSTO WAFER MILKY 24X40GR (D)","NAPOLITAINS CHOCOLATES 1KG (D)","REFLEX MAXI WAFER 24X55GR (D)","REFLEX PRINCH 24X24GR (D)"],"CICIBALL":["CICIBALL CHOCOLATE 1KG (D)"],"COFFE STAR":["COFFE STAR CARAMELO CAFE 20X100X4GR (B)"],"DON JUAN":["DON JUAN AZUCAR 20X1KG (B)"],"EL TIO":["EL TIO ACEITE DE SOYA 12X900ML (B)<E>","EL TIO ARROZ CLASICO 24X900g (B)<E>","EL TIO ARROZ SUPERIOR 24X900g (B)<E>","EL TIO LECHE POLVO DESCREMADA 12X400g(B)<E>","EL TIO LECHE POLVO DESCREMADA 12X800g(B)<E>","EL TIO LECHE POLVO ENTERA 12X380g (B)<E>","EL TIO LECHE POLVO ENTERA 12X900g (B)<E>","EL TIO LECHE POLVO ENTERA 24X125g (B)<E>"],"FLASH BAG":["FLASH BAG (MIX) BOMBONES CAJA 2KG (D)","FLASH BAG BOMBONES AVELLANA 1KG (D)","FLASH BAG BOMBONES AVELLANA 500GR (D)","FLASH BAG BOMBONES CARAMELO 1KG (D)","FLASH BAG BOMBONES CARAMELO 500GR (D)","FLASH BAG BOMBONES COCONUT 1KG (D)","FLASH BAG BOMBONES COCONUT 500GR (D)","FLASH BAG BOMBONES FRESA 1KG (D)","FLASH BAG BOMBONES FRESA 500GR (D)","FLASH BAG MINI CAJA CORAZON 100GR (D)","FLASH CAJA MADLEN 160GR (D)"],"FLUFFY":["FLUFLY CHOCOLATE 24X25GR (D)"],"FRUTAS RELLENAS":["FRUTAS RELLENAS CARAM SURT20X100X3.6G(B)"],"FRUTICANDY":["FRUTICANDY CARAMELOS SURT 28X100X2.6G(B)"],"GIGGLES":["GIGGLES CENTRO DE CAMA 60X90CM 12X10U(B)","GIGGLES CENTRO DE CAMA 60X90CM 4X30U(B)","GIGGLES NATURAL PAÑAL BEBE JUNI 5X24U(B)","GIGGLES NATURAL PAÑAL BEBE MAXI 5X30U(B)","GIGGLES NATURAL PAÑAL BEBE MIDI 5X34U(B)","GIGGLES NATURAL PAÑAL BEBE MINI 5X40U(B)","GIGGLES PAÑAL DE ADULTO M 12X8UND (B)","GIGGLES PAÑAL DE BEBE JUNIOR 5X25UND (B)","GIGGLES PAÑAL DE BEBE MAXI 5X32 UND (B)","GIGGLES PAÑAL DE BEBE MIDI 5X36 UND (B)","GIGGLES PAÑAL DE BEBE MINI 5X40UND (B)","GIGGLES TOALLAS HUMED ANTIBACT 24X72U(B)","GIGGLES TOALLAS HUMED FLOWERS 24X72U (B)","GIGGLES TOALLAS HUMEDAS 12X100UND (B)","GIGGLES TOALLAS HUMEDAS 12X120UND (B)","GIGGLES TOALLAS HUMEDAS 24X72UND (B)","GIGGLES TOALLAS HUMEDAS BEBE 12X80UND(B)","GIGGLES TOALLAS HUMEDAS ORCHID 24X60U(B)","GIGGLES TOALLAS HUMEDAS ROSE 24X72UND(B)","GIGGLLES PAÑAL DE ADULTO L 12X7 UND (B)"],"GUSTO":["GUSTO WAFER CHOCOLATE 24X40GR (D)","GUSTO WAFER COCONUT 24X40GR (D)","GUSTO WAFER CUBE AVELLANAS 150GR(D)","GUSTO WAFER CUBE CHOCOLATE 150GR(D)","GUSTO WAFER CUBE FRESA 150GR(D)"],"LOGAN & MASON":["LOGAN & MASON ALMOHADA QUEEN (U)"],"LOKIÑO":["BARRILETE CARAM. MASTIC 18X50X8GR (B)","LOKIÑO CHUPETA FRESA 15X24X19GR (B)","LOKIÑO CHUPETA SURTIDA 15X24X19GR (B)","LOKIÑO MINIS FRUTALES 12X12X30GR (B)","LOKIÑO MINIS FRUTOS ROJ 12X12X30GR (B)","LOKIÑO SABORES SURTIDOS 24X100X4G (B)","SUPERCOCO TURRON CARAM 18X100X5GR (B)"],"MENTA HELADA":["MENTA HELADA CARAMELO 24X100X3.8G (B)","MENTA HELADA FRUTAL 24X100X3.8GR (B)"],"OKA LOKA":["OKA LOKA CHICLE POLVO SURT 12X12X12G (B)","OKA LOKA FUSION 12X15X13G (B)","OKA LOKA NANOS 12X24X12GR (B)","OKA LOKA NANOS MIX 24X6X40GR (B)"],"Otros / Sin marca":["GUSTO CEREAL AROS FRUTALES 12X500GR (B)","GUSTO CEREAL BOLICHOCO 12X500GR (B)","GUSTO CEREAL HOJ. AZUCARADAS 12X500GR (B)","GUSTO CEREAL HOJ. NATURAL 12X500GR (B)","ICE MINT SURTIDA 20X100X4G (B)","IMAGENES CUADERNO COS CUADRICULADX90U(B)","IMAGENES CUADERNO COS DOBLE LINEAX90U(B)","IMAGENES CUADERNO COSIDO LINEA X 90UN(B)"],"PINK HEARTS":["PINK HEARTS CHUPETA PLANA 20X50X5GR (B)"],"REDONDITAS":["TOMY REDONDITAS BLACK 24X12X34G (B)","TOMY REDONDITAS CHOCOLATE 24X12X34G (B)","TOMY REDONDITAS FRESA 24X12X34G (B)","TOMY REDONDITAS LIMON 24X12X34G (B)","TOMY REDONDITAS VAINILLA 24X12X34G (B)"],"REFLEX":["REFLEX WAFER CHOCOLATE 24X28GR (D)","REFLEX WAFER FINGER 24X18GR (D)","REFLEX WAFER WHITE 24X28GR (D)"],"REVOLCON":["REVOLCON ATOMOS 24X48X3.8G (B)","REVOLCON CARAMELO 12X50X5G (B)","REVOLCON CHICLE 12X50X5G (B)"],"RICATO":["RICATO CARAMELO 18X50X7.5G (B)"],"ROCK AND ROLL":["ROCK AND ROLL COCONUT 24X18GR (D)"],"SALTITACOS":["TOMY SALTITACOS 12X7 TACOS (B)","TOMY SALTITACOS 24X7 TACOS (B)","TOMY SALTITACOS MANTEQUILLA 24X4TACOS(B)"],"SPOX":["SPOX CREMA DE LAVAPLATOS 24X500GR (B)","SPOX DESINFECTANTE BICARBONAT12X960ML(B)","SPOX DESINFECTANTE LAVANDA 12X960ML(B)","SPOX LAVAPLATOS LIQ LIMON 12X960ML (B)","SPOX SUAVIZANTE MANZANA VERD12X1000ML(B)","SPOX SUAVIZANTE PRIMAVERAL 12X1000ML (B)"],"SUPERB":["SUPERB BLANQUEADOR ROPA COLOR 12X1LT (B)","SUPERB DESENGRASANTE CITRICO 24X500ML(B)","SUPERB DETER MULTIUSOS BICAR 12X960ML(B)","SUPERB JABON BARRA AZUL LIQ 12X960ML(B)","SUPERB JABON BARRA BEBE LIQ 12X960ML(B)","SUPERB JABON BARRA COCO LIQ 12X960ML (B)","SUPERB JABON LIQ MANO F/ ROJ 24X500ML(B)","SUPERB JABON LIQ MANO F/VERD 24X500ML(B)","SUPERB LAVALOZA LIQ LIMON 12X960ML(B)","SUPERB LAVALOZA LIQ LIMON 24X500ML(B)","SUPERB LIMPIAPISO BICARBON 12X960ML(B)","SUPERB LIMPIAPISO LAVANDA 12X960ML(B)","SUPERB LIMPIAPISOS BICARBONATO 6X2L (B)","SUPERB LIMPIAPISOS LAVANDA 6X2L (B)","SUPERB POLVO ABRASIVO DESENG 15X500GR(B)","SUPERB SUAVIZANTE DE MANZANA 12X1L (B)","SUPERB SUAVIZANTE PRIMAVERAL 12X1L (B)","SUPERB SUAVIZANTE PRIMAVERAL 4X3000ML(B)","SUPERB SUAVIZANTE PRIMAVERAL 4X4000ML(B)","SUPERB SUAVIZANTE PRIMAVERAL 6X2000ML(B)"],"SUPERCOCO":["SUPERCOCO TIRUDITO MASTICABLE (B) 18X40X8GR (B)"],"TRULULU":["TRULULU AROS SURTIDOS 18X100X6G (B)","TRULULU AROS SURTIDOS 24X70G (B)","TRULULU AROS SURTIDOS 36X50X6GR (B)","TRULULU CASQUITOS MANDARINA 24X70G (B)","TRULULU CHOCOBANANA 12X50GR (B)","TRULULU CHOCOLORES A&A 12X12X30GR (B)","TRULULU CHOCOLORES12X12X30G (B)","TRULULU CON NANOS 24X70GR (B)","TRULULU EXHIBID 12CARAS X 84UND(77-90)G","TRULULU EXHIBID 27CARAS X 192UND(77-90)G","TRULULU FRANKI 24X70GR (B)","TRULULU FRESITAS 24X70G (B)","TRULULU GUSANOS ACIDOS SURT 24X70G (B)","TRULULU GUSANOS DULCES 24X70GR (B)","TRULULU HELADO FRESA 12X54GR (B)","TRULULU LOVE MIX 24X70GR (B)","TRULULU MASMELOS AMERICANO 12X70GR (B)","TRULULU MASMELOS CELEBRACION 12X70GR (B)","TRULULU RENOLFO 24X80GR (B)","TRULULU SABORES 24X70G (B)","TRULULU SABORES PIRAMIDAL12X12X30GR (B)","TRULULU SURT PREFE/VARIEDAD 24X77-80G(B)","TRULULU SURTIDO CHOCOPOSTRES 24X54GR (B)","TRULULU SURTIDO MAS VENDIDO 24X70-80G (B)","TRULULU VOLCAN DE CHOCO 12X54GR (B)","YOGGER CARAM. RELLENO MASTICABLE 18X100X4GR (B)"]},"clientes":[{"n":"9 ELEVEN, C.A.","t":"Hipermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"ABASTO AGUA PURA C.A.","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"ABASTO DONDE EL GOCHO Y SU FAMILIA, C.A","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"ABASTOS Y CARNICERIA J Y L C.A.","t":"Abasto","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"AFAMIA C.A.","t":"Abasto","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"AGRO INVERSIONES LA MATICA 2124 C.A.","t":"Abasto","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"AGUILA IMPORT C.A.","t":"Mayorista","c":"Tradicional","z":"Corporativo","e":"Zulia (VE)"},{"n":"ALEXANDER RAFAEL BOSCAN SANCHEZ","t":"Abasto","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"ALIMENTOS LUNA C.A.","t":"Distribuidor","c":"Tradicional","z":"COL - 1","e":"Zulia (VE)"},{"n":"ALIMENTOS NANI C.A..","t":"Heladeria","c":"Tradicional","z":"COL - 1","e":"Zulia (VE)"},{"n":"ATTA IMPORTACIONES COMPAÑIA ANONIMA","t":"Mayorista","c":"Tradicional","z":"Falcon","e":"FALCON (VE)"},{"n":"AUTO MERCADO HE C.A.","t":"Supermercado","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"AUTOMERCADO EL PRIMERO C.A.","t":"Supermercado","c":"Moderno","z":"Trujillo","e":"TRUJILLO (VE)"},{"n":"AUTOMERCADO SU CASA C.A.","t":"Supermercado","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"BABY CITY 2010 C.A.","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"BALVI C.A.","t":"Mayorista","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"BARATON LA K C.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"BENNO INVERSIONES 2023 C.A.","t":"Abasto","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"CENTRO DE ABASTECIMIENTO LA OFERTA, C.A.","t":"Mayorista","c":"Tradicional","z":"Falcon","e":"FALCON (VE)"},{"n":"CENTRO FLORES-TE C.A..","t":"Confiteria","c":"Moderno","z":"","e":"CARACAS (VE)"},{"n":"CENTRO SOL C.A..","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"CHANG DISTRIBUCIONES C.A.","t":"Mayorista","c":"Tradicional","z":"COL - 1","e":"Zulia (VE)"},{"n":"CHAOGUO HUANG","t":"Supermercado","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"CHARCUTERIA FINA C.A.","t":"Supermercado","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"CHARCUTERÍA CHIPI, CA","t":"Charcuteria","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"CHARCUTODO L & L, C.A","t":"","c":"","z":"","e":"Zulia (VE)"},{"n":"CHARLOTTE PANADERIA, C.A","t":"Panaderia","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"COLOMBINA, C.A","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"COMERCIAL 99 FORTUNA C.A.","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"COMERCIAL AHORRO 2020 C.A.","t":"Supermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"COMERCIAL AMIGO COMPAÑIA ANONIMA","t":"Supermercado","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"COMERCIAL ASIA C.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"COMERCIAL CALIFORNIA 2021 CA","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"COMERCIAL CARACOL COMPAÑIA ANONIMA","t":"Supermercado","c":"Moderno","z":"Noroeste","e":"Zulia (VE)"},{"n":"COMERCIAL CENTRAL 34 C.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"COMERCIAL CENTRO 2028C.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"COMERCIAL CHEN A C.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"COMERCIAL CHEN C.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"COMERCIAL DEL ZULIA C.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"COMERCIAL E INVERSIONES LA AMISTAD C.A.","t":"Supermercado","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"COMERCIAL EDWIN SANCHEZ C.A.","t":"Mayorista","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"COMERCIAL EL CORDERO COMPAÑIA ANONIMA","t":"Supermercado","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"COMERCIAL EL NUEVO MOJAN C.A.","t":"Mayorista","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"COMERCIAL ELENA LING COMPAÑIA ANONIMA","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"COMERCIAL ELVIS CEN C.A.","t":"Mayorista","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"COMERCIAL GRAN EXITO II C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"COMERCIAL HERMANOS MORILLO C.A.","t":"Mayorista","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"COMERCIAL KATY WU C.A.","t":"Abasto","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"COMERCIAL KING II CA","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"COMERCIAL L&FM C.A.","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"COMERCIAL LA OLIMPICA H.L C.A.","t":"Mayorista","c":"Tradicional","z":"COL - 1","e":"Zulia (VE)"},{"n":"COMERCIAL LING 32 C.A.","t":"Mayorista","c":"Tradicional","z":"Lara","e":"LARA (VE)"},{"n":"COMERCIAL LOS PLATANEROS C.A.","t":"Mayorista","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"COMERCIAL LT DISTRIBUIDORA C.A","t":"Supermercado","c":"Moderno","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"COMERCIAL MENE NANA C.A.","t":"Abasto","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"COMERCIAL MI MESA, C.A","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"COMERCIAL MUCHPAAG C.A.","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"COMERCIAL MUNDO BUENO C.A.","t":"Supermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"COMERCIAL NUEVA ECONOMIA C.A.","t":"Supermercado","c":"Moderno","z":"Mara","e":"Zulia (VE)"},{"n":"COMERCIAL NUEVA ZULIA, COMPAÑIA ANONIMA C.A.","t":"Supermercado","c":"Moderno","z":"Noroeste","e":"Zulia (VE)"},{"n":"COMERCIAL ORIENTAL 34 C.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"COMERCIAL PORVENIR 2019 C.A.","t":"Supermercado","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"COMERCIAL RIVAS 2023, C.A","t":"Supermercado","c":"Moderno","z":"La concepcion","e":"Zulia (VE)"},{"n":"COMERCIAL SAMI S.A.","t":"Mayorista","c":"Tradicional","z":"Falcon","e":"FALCON (VE)"},{"n":"COMERCIAL XING XING 168 C.A.","t":"Abasto","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"COMERCIAL Y DISTRIBUIDORA SANTA MARIA, C.A.","t":"Abasto","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA ARAMGON C.A.","t":"Mayorista","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA DARYVIC , C.A","t":"","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA DE CARNES DEL SUR, C.A","t":"Carniceria","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA DE PRODUCTOS MULTIPLES, L.C. C.A","t":"Abasto","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA E INVERSIONES M & U C.A.","t":"Mayorista","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA EL NENE C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA FERNANDEZ CELIS 7681 C.A.","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA HG MIS NIETOS, C.A","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA K.J.K C.A.","t":"Mayorista","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA LIANG Y LIZENG C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA LOS CABRERAS COMPAÑIA ANONIMA","t":"Mayorista","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA RAMI 2020 C.A.","t":"Mayorista","c":"Tradicional","z":"Falcon","e":"FALCON (VE)"},{"n":"COMERCIALIZADORA SCARLEN. C.A.","t":"Mayorista","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA VANEGAS RODRIGUEZ, C.A","t":"Mayorista","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA VICBAR, C.A.","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA WJ OCANDO C.A.","t":"Mayorista","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA Y DISTRIBUCIONES F&F C.A.","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA Y DISTRIBUIDORA F.C C.A.","t":"Mayorista","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA Y DISTRIBUIDORA KAAY -KASHY , C.A","t":"Mayorista","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA Y DISTRIBUIDORA LOS GONZALEZ C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA Y DISTRIBUIDORA PADRE E HIJO. C.A.","t":"Mayorista","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"COMERCIALIZADORA, TRANSPORTADORA Y PANIFICADORA N&G COMTRANSPA, C.A.","t":"Mayorista","c":"Tradicional","z":"COL - 1","e":"Zulia (VE)"},{"n":"CON EL PATRON, C.A","t":"Supermercado","c":"Moderno","z":"Noroeste","e":"Zulia (VE)"},{"n":"CONFITERIA LA GUACAMAYA, C.A.","t":"Distribuidor","c":"Tradicional","z":"Lara","e":"TRUJILLO (VE)"},{"n":"CONFITERIA LA NUEVA C.A.","t":"Confiteria","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"CONFITERIA NUBELIN Y ALGO MAS CA","t":"Confiteria","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"CONFITERIA Y REPOSTERIA LA LIMPIA S.A.","t":"Confiteria","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"CORPORACION LA EMBAJADA C.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"CORTELLO MARKETPLACE, C.A","t":"Carniceria","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"COSECHA SUPER MARKET C.A.","t":"Supermercado","c":"Moderno","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"COSECHA SÚPER MARKET C2, C.A.","t":"Supermercado","c":"Moderno","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"CREA - DESARROLLOS SOCIEDAD ANONIMA (CREDESA)","t":"Supermercado","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"CRIKET C.A.","t":"Distribuidor","c":"Tradicional","z":"Trujillo","e":"Zulia (VE)"},{"n":"CYBERTODO PRODUCTOS Y SERVICIOS, COMPAÑIA ANONIMA","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"DELI EXPRESS CHARCUTERIA C.A.","t":"Supermercado","c":"Moderno","z":"Perija","e":"Zulia (VE)"},{"n":"DETODO C.A.","t":"Mayorista","c":"Moderno","z":"Corporativo","e":"Zulia (VE)"},{"n":"DIOSA CAUTIVADORA C.A.","t":"Abasto","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"DISOCA DISTRIBUCIONES DE OCCIDENTE, C.A.","t":"Distribuidor","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"DISTRIBUCIONES SHADDAI C.A.","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA BETSABET,C.A.","t":"Abasto","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA CHANG 2020 C.A.","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA CHINESE TOWN C.A.","t":"Supermercado","c":"Moderno","z":"Trujillo","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA DE ALIMENTOS JEHOVA ES MI PASTOR 2023, C.A","t":"Abasto","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA DE ALIMENTOS MI CHINITA C.A.","t":"Abasto","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA E INVERSIONES","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA E INVERSIONES C.A.T.A C.A.","t":"Mayorista","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA E INVERSIONES GONZAGA MARIN, COMPAÑIA ANONIMA","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA EL SOL BEIRUT C.A.","t":"Supermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"DISTRIBUIDORA EMPORIUM TRANSGLOBAL, C.A","t":"Distribuidor","c":"Tradicional","z":"Falcon","e":"FALCON (VE)"},{"n":"DISTRIBUIDORA EXITO I C. A.","t":"Mayorista","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA FAMOSO C.A.","t":"Mayorista","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA FAMOSO OCCIDENTE C.A.","t":"Mayorista","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA J.Y 2021 C.A.","t":"Abasto","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA LA WAKA C.A.","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA LASSIN FASHION 2023C.A.","t":"Distribuidor","c":"Tradicional","z":"Falcon","e":"FALCON (VE)"},{"n":"DISTRIBUIDORA LL 2022 C.A.","t":"Mayorista","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA LUGO MAYOR C.A.","t":"Farmacia","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"DISTRIBUIDORA MEGA CONFITES C.A.","t":"Mayorista","c":"Tradicional","z":"Falcon","e":"FALCON (VE)"},{"n":"DISTRIBUIDORA TU MERCADO EXPRESS, C.A","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA Y COMERCIAL SAN GABRIEL C.A.","t":"Mayorista","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA Y COMERCIALIZADORA 24 DE JULIO C.A.","t":"Mayorista","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA Y COMERCIALIZADORA EL TITULAR , C.A","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA Y COMERCIALIZADORA LA ESTIBA CA","t":"Mayorista","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA Y COMERCIALIZADORA LILITA´S C.A.","t":"Mayorista","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA Y COMERCIALIZADORA SAN ANDRES, C.A.","t":"Abasto","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA Y COMERCIALIZADORA SAN BENITO POR TRADICION, C.A.","t":"","c":"","z":"","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA Y COMERCIALIZADORA W & M EL PROGRESO, C.A","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA Y PROCESADORA EL TRIUNFO C.A.","t":"Supermercado","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA YAMILE C.A.","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA YORDIS RS. C.A.","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"DISTRIBUIDORA ZAMIN 2025, C.A.","t":"Supermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"DULCE MANIA COMPAÑIA ANONIMA","t":"Abasto","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"EL BODEGON DEL PAN , C.A","t":"Panaderia","c":"Tradicional","z":"Norte","e":""},{"n":"EL COCOBOM, C.A","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"EL NUEVO DRAGON CHINO C.A.","t":"Supermercado","c":"Moderno","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"EL OLAM M&M COMPAÑIA ANONIMA","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"EL PATRON DE LAS OFERTAS C.A.","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"ELITE MINIMARKET C.A.","t":"Mayorista","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"EMPRENDIMIENTO LENDRY ARAUJO , C.A","t":"","c":"","z":"","e":"Zulia (VE)"},{"n":"EMPRENDIMIENTO LISBETH MORAN","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"EMPRENDIMIENTO MICHEL BASSIL","t":"Abasto","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"FAMOSO HIPERMERCADO C.A.","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"FARMA SERVICIOS CUMBRES C.A.","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"FARMA SERVICIOS LA FUENTE BELLAS ARTES C.A.","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"FARMA VID 2024 C.A.","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"FARMA VID SUR, C.A","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"FARMACIA AVENIDA UNIVERSIDAD C.A..","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"FARMACIA EL CALLEJON C.A.","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"FARMACIA EL SAMAN PERIJA , C.A","t":"Farmacia","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"FARMACIA FARMA EXPRESS PERIJA, C.A.","t":"Farmacia","c":"Moderno","z":"Perija","e":"Zulia (VE)"},{"n":"FARMACIA FARMA SERVCIO LA CANDELARIA EXPRESS C.A.","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"CARACAS (VE)"},{"n":"FARMACIA FARMA SERVICIO LA CANDELARIA C.A.","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"CARACAS (VE)"},{"n":"FARMACIA FARMA SERVICIOS LA CASTELLANA C.A.","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"CARACAS (VE)"},{"n":"FARMACIA FARMA SERVICIOS LA FLORIDA C.A.","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"CARACAS (VE)"},{"n":"FARMACIA FARMA SERVICOS LOS RUICES C.A.","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"FARMACIA FARMAESTRELLA C.A..","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"FARMACIA FARMAEXPRESS 24 BELLA VISTA C.A.","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"FARMACIA FARMAEXPRESS 24 CARIBE","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"FARMACIA FARMAEXPRESS 24 PREMIER C.A.","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"FARMACIA FARMAEXPRESS 24 SAN FRANCISCO C.A.","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"FARMACIA HOLLYWOOD, C.A.","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"FARMACIA LA LAGO C.A","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"FARMACIA MILLENIUM 2000 C.A.","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"FARMACIA TIERRA NEGRA C.A..","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"FARMACIA Y MULTITIENDAS LAS RUBIO C.A.","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"FARMAK MEDICAMENTOS, C.A","t":"Farmacia","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"FARMAPLUS CECILIO ACOSTA C.A.","t":"Farmacia","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"FASHION CITY SAN FRANCISCO C.A.","t":"Abasto","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"FASHION SHENE MARACAIBO C.A.","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"FASHION SHENE MARACAIBO C.A., PRINCIPAL","t":"Abasto","c":"Moderno","z":"Noroeste","e":"Zulia (VE)"},{"n":"FIDEL JORGE RODRIGUEZ GARCIA","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"FRANCISCO JAVIER CALVO GONZALEZ","t":"Abasto","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"FRUTAS EL GORDO C.A.","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"GABYROS MINI MARKET C.A.","t":"Abasto","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"GALLETERA PRONASA,C.A","t":"Industrial","c":"Tradicional","z":"Corporativo","e":"Zulia (VE)"},{"n":"GENESIS DEL CARMEN CALDERA SANCHEZ","t":"Abasto","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"GENPROALVE C.A.","t":"Distribuidor","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"GOURMET JERUSALEN SANTA COMPAÑIA ANONIMA","t":"Carniceria","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"GRAN EXITO 2024 C.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"GRAN SURTIDO 2015 C.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"GRANMARKET LA GRACIA DE DIOS C.A.","t":"Mayorista","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"GRUPO INVERSIONES LV CORP , C.A","t":"Supermercado","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"HELADOS NANY COMPAÑIA ANONIMA","t":"Heladeria","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"HIPER DESCUENTO MACHIQUES C.A.","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"HIPERMERCADO 4R C.A.","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"HORTICARNES EL MARQUEZ C.A.","t":"Supermercado","c":"Moderno","z":"Falcon","e":"Zulia (VE)"},{"n":"HUGO ENRIQUE CASTILLA GONZALEZ","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"IMPORTACIONES  DE EXPRESS C.A.","t":"Mayorista","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"INDUSTRIA ALIMENTICIA Y MANUFACTURERA RAID MAAZ C.A..","t":"Mayorista","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"INVERCIONES G.&.R.2.3 C.A.","t":"Abasto","c":"Tradicional","z":"","e":"Zulia (VE)"},{"n":"INVERSIONES & COMERCIALIZADORA P&C C.A.","t":"Mayorista","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"INVERSIONES A Y F 20145 C.A.","t":"Supermercado","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"INVERSIONES ABASTOS GONZALVA, C.A.","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"INVERSIONES ABEL DAVID C.A.","t":"Supermercado","c":"Moderno","z":"Noroeste","e":"Zulia (VE)"},{"n":"INVERSIONES ALICIA C.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"INVERSIONES BELGON C.A.","t":"Mayorista","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"INVERSIONES BENITEZ CONQUETH C.A..","t":"Supermercado","c":"Moderno","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"INVERSIONES BET-EL DE DIOS, C.A","t":"Supermercado","c":"Moderno","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"INVERSIONES CASTILLO PEROZO C.A.","t":"Mayorista","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"INVERSIONES CIELOS ABIERTOS 2023 C.A.","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"INVERSIONES CIELOS ABIERTOS A & K, C.A","t":"Abasto","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"INVERSIONES COMERCIAL DIOS CON NOSOTROS 324 C.A.","t":"Abasto","c":"Tradicional","z":"COL - 1","e":"Zulia (VE)"},{"n":"INVERSIONES DAOP. , C.A","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"INVERSIONES EL ARABE 2025, C.A.","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"INVERSIONES EL KTIRE 05, C.A","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"INVERSIONES EL QUILLA C.A.","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"INVERSIONES EL SOL DE FALCON C.A.","t":"Supermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"INVERSIONES ERIKA DEL MAR C.A.","t":"Abasto","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"INVERSIONES FINSO HOGAR C.A.","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"INVERSIONES FRANKTONY C.A.","t":"Abasto","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"INVERSIONES GABRIEL SANCHEZ. C.A.","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"INVERSIONES GOLLITO, C.A","t":"Abasto","c":"Tradicional","z":"La concepcion","e":"Zulia (VE)"},{"n":"INVERSIONES GRAN GLOBO C.A..","t":"Mayorista","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"INVERSIONES GRECIA CG C.A.","t":"Mayorista","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"INVERSIONES GULLY C.A.","t":"Abasto","c":"Tradicional","z":"La concepcion","e":"Zulia (VE)"},{"n":"INVERSIONES HAMILLKAR C.A.","t":"Abasto","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"INVERSIONES HENSER 2023 C.A.","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"INVERSIONES HERCHI II 2025, C.A","t":"Supermercado","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"INVERSIONES HERMANOS CAMACHO LOZANO C.A.","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"INVERSIONES HERMANOS R.G, C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"INVERSIONES J  V. C.A.","t":"Mayorista","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"INVERSIONES JEHOVA ES MI LUZ Y MI SALVACION 2023 C.A.","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"INVERSIONES JM 2017 C.A.","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"INVERSIONES JOHENDRY CA","t":"Mayorista","c":"Tradicional","z":"COL - 1","e":"Zulia (VE)"},{"n":"INVERSIONES JOSEITO J & J C.A.","t":"Abasto","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"INVERSIONES JUAREZ & BAPTISTA, C.A.","t":"Abasto","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"INVERSIONES KJK 2025 , C.A","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"INVERSIONES L & A 2017 C.A.","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"INVERSIONES L Y K 2020 C.A.","t":"Mayorista","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"INVERSIONES LA FORTUNA MYD, C.A.","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"INVERSIONES LA GAVIOTA 2018 C.A.","t":"Supermercado","c":"Moderno","z":"Mara","e":"Zulia (VE)"},{"n":"INVERSIONES LA MISERICORDIA 2021 CA","t":"Mayorista","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"INVERSIONES LA MURALLA C.A.","t":"Supermercado","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"INVERSIONES LA NUEVA BRASILEÑA C.A.","t":"Supermercado","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"INVERSIONES LAS D & A 06 C.A.","t":"Supermercado","c":"Moderno","z":"Mara","e":"Zulia (VE)"},{"n":"INVERSIONES LIDER EXPRESS C.A.","t":"Supermercado","c":"Moderno","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"INVERSIONES LISBOA MARKET C.A.","t":"Supermercado","c":"Moderno","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"INVERSIONES LOS JUANES, C.A.","t":"Panaderia","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"INVERSIONES LOS MOROCHOS MONTE BELLO 12. C.A.","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"INVERSIONES LOS QUINTEROS C.A.","t":"Abasto","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"INVERSIONES LUIS CARPIO 2024 C.A.","t":"Abasto","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"INVERSIONES MAGERO C.A.","t":"Distribuidor","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"INVERSIONES MARAGRIS C.A.","t":"Supermercado","c":"Moderno","z":"Perija","e":"Zulia (VE)"},{"n":"INVERSIONES MEGA ZULIA C.A.","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"INVERSIONES MF GABO IMPORT, C.A","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"INVERSIONES MI DULCE MANANTIAL DV C.A.","t":"Mayorista","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"INVERSIONES MJK,C.A","t":"Supermercado","c":"Moderno","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"INVERSIONES MONCADA FIALLO C.A.","t":"Mayorista","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"INVERSIONES NEURIS EXPORT, C.A.","t":"Confiteria","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"INVERSIONES OLIVARES ROMERO","t":"Abasto","c":"Tradicional","z":"COL - 1","e":"Zulia (VE)"},{"n":"INVERSIONES PA  QUE ADRIAN C.A.","t":"Confiteria","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"INVERSIONES PALMERA RINCON C.A.","t":"Mayorista","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"INVERSIONES PARRA CARRILLO COMPAÑIA ANONIMA","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"INVERSIONES PEDRO & PABLO NV C.A.","t":"Mayorista","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"INVERSIONES PUERTAS DEL CIELO G & V ,C .A","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"INVERSIONES RADIZ C .A.","t":"Abasto","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"INVERSIONES REPRESENTACIONES CECI C.A.","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"INVERSIONES ROSCAM L&A C.A.","t":"Abasto","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"INVERSIONES ROXIBEL , C.A","t":"Abasto","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"INVERSIONES SANTA CLARA DE JUAN DIEGO C.A.","t":"Abasto","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"INVERSIONES SELL C.A. (INVERSELCA)","t":"Abasto","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"INVERSIONES SERCAEM 16, C.A","t":"Abasto","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"INVERSIONES SUGAR TOWN 27 C.A.","t":"Abasto","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"INVERSIONES TROMERO 25 C.A.","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"INVERSIONES V X 3 C.A.","t":"Distribuidor","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"INVERSIONES VIRGEN DEL CARMEN M&N C.A.","t":"Supermercado","c":"Moderno","z":"Perija","e":"Zulia (VE)"},{"n":"INVERSIONES W & A , C.A","t":"Carniceria","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"INVERSIONES W & E DE LA MANO DE DIOS C.A.","t":"Mayorista","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"INVERSIONES W & W 2017 C.A.","t":"Supermercado","c":"Moderno","z":"La concepcion","e":"Zulia (VE)"},{"n":"INVERSIONES XIMENA ZH COMPAÑIA ANONIMA","t":"Abasto","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"INVERSIONES Y COMERCIALIZADORA ELIAS JOSE C.A.","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"INVERSIONES Y DISTRIBUCIONES DAYCA C.A.","t":"Distribuidor","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"INVERSIONES Y DISTRIBUIDORA TORRES VARGAS C.A.","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"INVERSIONES Y SUMINISTROS LOPEZ & ASOCIADOS COMPAÑIA","t":"Abasto","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"INVERSIONES Y SUMINISTROS MCBO A & A","t":"Abasto","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"INVERSIONES Y VIVERES EL RINCON COLOMBIANO C.A.","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"INVERSIONES YASJOS COMPAÑIA ANONIMA","t":"Abasto","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"INVERSIONES YORGELIY, C.A.","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"INVERSIONES YUSMELI 2024 C.A.","t":"Abasto","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"INVERSIONES YY & M C.A.","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"J&L MARKET 1, C.A","t":"Supermercado","c":"Moderno","z":"Noroeste","e":"Zulia (VE)"},{"n":"J&Y INVERSIONES #1, C.A.","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"JANMAR ANTONIO RAMIREZ BRACHO","t":"Supermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"JAVIER RAMON ATENCIO MINGUAL","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"JHON DE JESUS RAMIREZ ARRIETA","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"JIANZHAO CHEN","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"JIMGIE 2022, C.A","t":"Abasto","c":"Tradicional","z":"COL - 1","e":"Zulia (VE)"},{"n":"JOSE JESUS  MOLERO VASQUEZ","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"JOSE LUIS VELA SANCHEZ","t":"Abasto","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"JUAN CARLOS LOPEZ VILLALOBOS","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"JUAN PABLO ATENCIO MINGUAL","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"JULIANA VANESSA SOLER MORALES","t":"Abasto","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"JULIO CESAR OLIVEROS ATENCIO","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"JUSTO Y BUENO CA","t":"Supermercado","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"KALYPSO Z&C C.A.","t":"Abasto","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"KJK SUPERMARKET C.A.","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"LA BARATERA 2024. CA","t":"Abasto","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"LA BOLSA DEL REPOSTERO C.A.","t":"Abasto","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"LA CENTRAL 2022 C.A.","t":"Mayorista","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"LA ROMANA COMERCIALIZADORA Y DISTRIBUIDORA C.A.","t":"Supermercado","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"LACTEOS Y VIVERES DON ALIRIO ,C.A","t":"Abasto","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"LILITAS MARACAIBO. C.A.","t":"Mayorista","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"LOKICLIP C.A.","t":"Confiteria","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"LOS ANGELES COMERCIALIZADORA, C.A","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"LUIS ALFONSO CAMBAR SIMANCA","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"LUIS KAR C.A.","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"LUNA MARKET C.A.","t":"Supermercado","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"MAHER ALBRIHI","t":"Abasto","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"MAICAO N & N C.A.","t":"Mayorista","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"MARIA ANDREINA MARTINEZ CORONA","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"MARKET & INVERSIONES TERI C.A.","t":"Abasto","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"MAXI PINGUINO C.A.","t":"Supermercado","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"MAYOR LA C , C.A","t":"Supermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"MAYOR Y DETAL EL EXITO 2022 C.A.","t":"Mayorista","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"MEGA 72 C.A..","t":"Supermercado","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"MEGA 76 LA FARIA, C.A","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"MEGA AHORRO M Y J C.A.","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"MEGA COMPRAS SUPERMERCADO C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"MEGA DISTRIBUCIONES CB, C.A","t":"Distribuidor","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"MEGA INVERSIONES LA FAMILIA C.A.","t":"Supermercado","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"MEGA PARTY VE C.A.","t":"Confiteria","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"MEGAMARKET , C.A","t":"Supermercado","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"MEGATIENDALA EXCELENCIA C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"MERCA POLLO 2025 , C.A","t":"Supermercado","c":"Moderno","z":"Perija","e":"Zulia (VE)"},{"n":"MERCADO NUEVO FUTURO III C.A.","t":"Supermercado","c":"Moderno","z":"Falcon","e":"Zulia (VE)"},{"n":"MERCAMITO EXPRESS, C.A.","t":"Abasto","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"MERCAOFERTAS C.A.","t":"Supermercado","c":"Moderno","z":"Noroeste","e":"Zulia (VE)"},{"n":"MERCATODO C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"MERKA EXPRESS CAMINO AL EXITO C.A.","t":"Abasto","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"MG RETAIL JK, C.A","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"MINI MARKET CUMANA C.A.","t":"Abasto","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"MINI MARKET ESPERANZA C.A.","t":"Abasto","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"MINI MARKET JA C.A..","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"MINIMARKET FLORIDA C.A.","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"MINIMARKET RODRIGUEZ GONZALEZ 2022 C.A.","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"MINIMARKET W&W 0714, C.A.","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"MULTI TIENDA LA OFERTA C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"MULTI-REPOSTERIA MARACAIBO C.A.","t":"Abasto","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"MULTITIENDA  FARMA SERVICIOS LA LIMPIA C.A.","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"MULTITIENDA CARIBE 2, C.A","t":"Supermercado","c":"Moderno","z":"Norte","e":""},{"n":"MULTITIENDA FAMILIA C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"MULTITIENDA FARMA SERVICIO LOS COCHES COMPAÑIA ANONIMA","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"MULTITIENDA FARMA SERVICIOS AV 10, COMPAÑIA ANONIMA","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"MULTITIENDA FARMA SERVICIOS BELLA VISTA COMPAÑIA ANONIMA","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"MULTITIENDA FARMA SERVICIOS INDIO MARA, C.A","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"MULTITIENDA FARMA SERVICIOS LA COROMOTO, COMPAÑIA","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"MULTITIENDA FARMA SERVICIOS LAS MERCEDES, C.A","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"MULTITIENDA FARMA SERVICIOS NORTE COMPAÑIA ANONIMA","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"MULTITIENDA FARMA SERVICIOS OJEDA INTERCOMUNAL COMPAÑIA ANONIMA , C.A","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"MULTITIENDA FAVORITA, C.A","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"MULTITIENDA INTER SALUD C.A.","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"MULTITIENDA NEW MUNDO, C.A","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"MULTITIENDA NUEVO SIGLO C.A.","t":"Abasto","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"MULTITIENDA SUPERSALUD DEL ZULIA,C .A","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"MULTITIENDA SUR AMERICA C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"MULTITIENDA Y FARMACIA FARMAEXPRESS 24 C.A.i","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"MULTITIENDA ¡QUE BARATO! M&E , C.A","t":"Abasto","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"MULTITIENDAS 168 C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"MULTITIENDAS EXITO C.A.","t":"Supermercado","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"MULTITIENDAS FAMILIA , C.A","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"MULTITIENDAS FARMA SERVICIOS SAN FRANCISCO MALL COMPAÑIA ANONIMA","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"MULTITIENDAS FARMAK, C.A.","t":"Farmacia","c":"Moderno","z":"Perija","e":"Zulia (VE)"},{"n":"MULTITIENDAS FARMAPLUS C.A.","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"MULTITIENDAS FARMAPLUS GRAN BAZAR C.A.","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"MULTITIENDAS FARMAPLUS LOS HATICOS, C.A","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"MULTITIENDAS MI CHINITA C.A..","t":"Supermercado","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"MULTITIENDAS REPOPLAST C.A.","t":"Abasto","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"MUNDO SUPER FASHION C.A.","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"MUNDO WEN MAYORISTA C.A.","t":"Supermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"NADIA ABDELWUAJAD ATA DE ABDALLH","t":"Supermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"NEW CANAIMA 2023 C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"NUEVA CONFITERIA DEL SUR C.A.","t":"Confiteria","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"OASIS MARKET 2025. C.A","t":"Supermercado","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"OCCI DIST, C.A","t":"Distribuidor","c":"Moderno","z":"Trujillo","e":"TRUJILLO (VE)"},{"n":"OLANO MARKET PICOLA C.A.","t":"Supermercado","c":"Moderno","z":"Noroeste","e":"Zulia (VE)"},{"n":"OLIMPICA GRUPO SAR","t":"Mayorista","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"OLIMPICA LOS ANDES C.A.","t":"Mayorista","c":"Moderno","z":"Trujillo","e":"Zulia (VE)"},{"n":"OPERADORA JLA C.A..","t":"Supermercado","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"OPERADORA PAG CANTA CLARO C.A.","t":"Supermercado","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"PANADERIA BREAD HOUSE C.A.","t":"Panaderia","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"PANADERIA EL ALEMAN C.A.","t":"Panaderia","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"PANADERIA LA FIRMA DE ORO C.A.","t":"Panaderia","c":"Moderno","z":"Noroeste","e":"Zulia (VE)"},{"n":"PANADERIA PINAR DON RIO C.A.","t":"Panaderia","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"PANADERIA RITZ 72 C.A..","t":"Supermercado","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"PANADERIA SUPER SAGRES 2.007, C.A","t":"Panaderia","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"PANADERIA Y MINIMARKET BRAGA C.A.","t":"Panaderia","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"PANADERIA Y PASTELERIA EL CASTILLO DE ALEPPO C.A.","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"PANADERIA Y PASTELERIA GRAN AMPARO , C.A","t":"Panaderia","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"PANADERIA Y PASTELERIA GRAN FUNDACION C.A.","t":"Panaderia","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"PANIFICADORA LA CASA DEL PAN 2017, C.A.","t":"Panaderia","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"PANIFICADORA PASTELERIA Y DELICATESES ESPIGA DORADA C.A.","t":"Panaderia","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"PA´QUE SERGIO SUPERMARKET, C.A","t":"Supermercado","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"PEDRO PABLO BRICEÑO SOTO","t":"Mayorista","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"PIÑATERIA KUKU C.A.","t":"Confiteria","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"QUINCALLERIA RIVAS C.A.","t":"Supermercado","c":"Moderno","z":"La concepcion","e":"Zulia (VE)"},{"n":"RAFITO MARKET C.A.","t":"Supermercado","c":"Moderno","z":"Noroeste","e":"Zulia (VE)"},{"n":"RAMI CENTRO 2026, C.A","t":"Supermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"REPORTERIA Y BOLSAS CLARY M C.A.","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"REPOSTERIA Y ALGO MAS YECMAX, COMPAÑIA ANONIMA","t":"Confiteria","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"REPRESENTACION TU CASA C.A.","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"RICHARD´S C.A.","t":"Mayorista","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"RONALCA SUPER MARKET C.A.","t":"Supermercado","c":"Moderno","z":"Noroeste","e":"Zulia (VE)"},{"n":"RORAILY RAMONA CARRASCI GUTIERREZ","t":"Abasto","c":"Tradicional","z":"COL - 1","e":"Zulia (VE)"},{"n":"SALVADOR SEGUNDO ROMERO TAPIA","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"SANTELIZ BUSINESS & SUPPLIES S.A","t":"Distribuidor","c":"Tradicional","z":"Falcon","e":"FALCON (VE)"},{"n":"SATURNO MARKET, C.A.","t":"Supermercado","c":"Moderno","z":"Corporativo","e":"Zulia (VE)"},{"n":"SUJUAN FANG CEN","t":"Supermercado","c":"Moderno","z":"Perija","e":"Zulia (VE)"},{"n":"SUMINISTROS LAEL C.A.","t":"Abasto","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"SUMINISTROS RODSIL, C.A","t":"","c":"Tradicional","z":"","e":"Zulia (VE)"},{"n":"SUPER ABASTO LAS CUMBRES C.A.","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"SUPER ABASTO LUIS APARICIO C.A.","t":"Abasto","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER ABASTO SANTO DOMINGO 8 C.A.","t":"Supermercado","c":"Moderno","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"SUPER BODEGONDEL PAN SOCIEDAD ANONIMA","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"SUPER CARNICERIA Y CHARCUTERIA HERMANOS ATENCIO , C.A","t":"Carniceria","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER CENTRO CORO, C.A","t":"Supermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"SUPER COMPRAS MARA NORTE C.A.","t":"Supermercado","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"SUPER DULCES INVERSIONES Y CONFITERIAS, C.A","t":"Confiteria","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"SUPER GRAN SURTIDO C.A.","t":"Carniceria","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER HOGAR METROPOLIS C.A.","t":"Supermercado","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"SUPER MARKET A&G C.A.","t":"Abasto","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER MARKET EL SOL, C.A","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"SUPER MERCADO EL PINAR,C.A","t":"Supermercado","c":"Moderno","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"SUPER MERCADO LOS AMIGOS C.A.","t":"Supermercado","c":"Moderno","z":"Perija","e":"Zulia (VE)"},{"n":"SUPER OCCIDENTAL LA 15 C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER OFERTAS JUAN DIEGO C.A.","t":"Supermercado","c":"Moderno","z":"Perija","e":"Zulia (VE)"},{"n":"SUPER OFERTON C.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"SUPER OLDA2 C.A.","t":"Supermercado","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"SUPER PANADERIA DIANA C.A.","t":"Panaderia","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER PANADERIA MAS KE PAN , C.A","t":"Panaderia","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"SUPER PANADERIA SAGRES MILLENIUM, COMPAÑIA ANONIMA C.A.","t":"Panaderia","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"SUPER PANADERIA Y PASTELERIA LA NUEVA FIRMA DE OROC.A.","t":"Panaderia","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"SUPER POLLITO EXPRESS, C.A","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"SUPER RIO MARKET C.A.","t":"Supermercado","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"SUPER SAMAN , C.A","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER TIENDA AMAPOLA C.A.","t":"Abasto","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER TIENDA CASA GRANDE C.A.","t":"Supermercado","c":"Moderno","z":"Perija","e":"Zulia (VE)"},{"n":"SUPER TIENDA DETODITO, C.A","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER TIENDA DON ELY COMPAÑIA ANONIMA","t":"Supermercado","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"SUPER TIENDA EL BOSQUE C.A.","t":"Mayorista","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"SUPER TIENDA EL FUTURO C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER TIENDA GIRASOL 123 C.A","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER TIENDA LA ECONOMICA C.A..","t":"Abasto","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER TIENDA LA EXITOSA, C.A","t":"Supermercado","c":"Moderno","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"SUPER TIENDA LA H C.A","t":"","c":"","z":"","e":""},{"n":"SUPER TIENDA LA POPULAR 2024 C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER TIENDA LA RIQUEZA C.A.","t":"Supermercado","c":"Moderno","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"SUPER TIENDA LATINO C.A.","t":"Supermercado","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"SUPER TIENDA LATINO COROMOTO C.A.","t":"Supermercado","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"SUPER TIENDA LATINO DELICIAS C.A.","t":"Supermercado","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"SUPER TIENDA LATINO PADILLA C.A.","t":"Supermercado","c":"Moderno","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"SUPER TIENDA LOS CACTUS C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER TIENDA MIS HIJOS LOS CACTUS , C.A","t":"Mayorista","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER TIENDA MULTITODO , C.A","t":"Supermercado","c":"Moderno","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"SUPER TIENDA PREMIUM C.A.","t":"Supermercado","c":"Moderno","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"SUPER TIENDA TODOS LOS DIAS C.A.","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"SUPER TIENDA XIE C.A.","t":"Abasto","c":"Tradicional","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER TIENDA Y VARIEDADES 3D , C.A","t":"","c":"","z":"","e":"Zulia (VE)"},{"n":"SUPER TIENDA Y VARIEDADES 3D, C.A","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"SUPER TIENDAS DEL SUR C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER TIENDAS LA GRAN CHINA, C.A","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER TIENDAS LUCKY C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER TIENDAS META , C.A","t":"Supermercado","c":"Moderno","z":"Corporativo","e":"Zulia (VE)"},{"n":"SUPER TIENDAS NUEVO LOS CORTIJOS","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPER VIVERES LA UNION C.A.","t":"Mayorista","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"SUPERFULL PARAGUANA","t":"Supermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"SUPERMARKET 688 C.A.","t":"Supermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"SUPERMARKET FIORELLA EXPRESS C.A","t":"Farmacia","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"SUPERMARKET J.D EXPRESS C.A.","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"SUPERMARKET LA MURALLA PF, C.A.","t":"Supermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"SUPERMARKET LA OCCIDENTAL C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPERMARKET LOS DURAN 2022, C.A","t":"Supermercado","c":"Moderno","z":"Perija","e":"Zulia (VE)"},{"n":"SUPERMARKET MARBELLA COMPAÑIA ANONIMA","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPERMARKET MEGAMARK, C.A","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPERMARKET MILENIUM CA","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPERMARKET POPULAR CHINA C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPERMARKET SAJONERO C.A.","t":"Mayorista","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"SUPERMARKETS VICTORI LIN C.A.","t":"Supermercado","c":"Moderno","z":"Falcon","e":"Zulia (VE)"},{"n":"SUPERMERCADO  GRAN ZULIA DOS CA","t":"Supermercado","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"SUPERMERCADO BUENO MUNDO C.A.","t":"Abasto","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"SUPERMERCADO CASA OJEDA C.A..","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"SUPERMERCADO CENTRO SOL C.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"SUPERMERCADO CHINITA 88, C.A","t":"Supermercado","c":"Moderno","z":"Mara","e":"Zulia (VE)"},{"n":"SUPERMERCADO CUATRICENTENARIO C.A..","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"SUPERMERCADO EL PRIMERO C.A..","t":"Supermercado","c":"Moderno","z":"Trujillo","e":"TRUJILLO (VE)"},{"n":"SUPERMERCADO GRAN MUNDO 88 C.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"SUPERMERCADO GRAN PINGUINO C.A.","t":"Supermercado","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"SUPERMERCADO GRAND MUNDO C.A.","t":"Supermercado","c":"Moderno","z":"Mara","e":"Zulia (VE)"},{"n":"SUPERMERCADO H 72 C.A.","t":"Supermercado","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"SUPERMERCADO JOSEITO GUILLEN C.A.","t":"Supermercado","c":"Moderno","z":"Perija","e":"Zulia (VE)"},{"n":"SUPERMERCADO LA FORTUNA 2021 CA","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"SUPERMERCADO LA NOTA DEL POLLO C.A.","t":"Supermercado","c":"Moderno","z":"Perija","e":"Zulia (VE)"},{"n":"SUPERMERCADO MO 88 CA","t":"Supermercado","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"SUPERMERCADO MUNDO ASIATICO 2020 C.A.","t":"Supermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"SUPERMERCADO NADIN C.A.","t":"Supermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"SUPERMERCADO NG COMPAÑIA ANONIMA","t":"Supermercado","c":"Moderno","z":"La concepcion","e":"Zulia (VE)"},{"n":"SUPERMERCADO NUEVA ERA C.A.","t":"Supermercado","c":"Moderno","z":"Mara","e":"Zulia (VE)"},{"n":"SUPERMERCADO NUMERO UNO C A","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"SUPERMERCADO OCCIDENTE C.A.","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"SUPERMERCADO OCCIDENTE FC, C.A","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"SUPERMERCADO PEZCA POLLO C.A.","t":"Supermercado","c":"Moderno","z":"Perija","e":"Zulia (VE)"},{"n":"SUPERMERCADO POPULAR C.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"SUPERMERCADO PRIMERO C.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"SUPERMERCADO SAMBA LATINO C.A.","t":"Supermercado","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"SUPERMERCADO SAMI C.A.","t":"Supermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"SUPERMERCADO SAN TOME C.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"SUPERMERCADO SUPER CINCO C.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"SUPERMERCADO TIA JUANA CITYC.A.","t":"Supermercado","c":"Moderno","z":"COL -2","e":"Zulia (VE)"},{"n":"SUPERMERCADO Y DISTRIBUIDORA SANTA BARBARA C.A.","t":"Supermercado","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"SUPERTIENDA EL PANDA  C.A.","t":"Supermercado","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"SUPERTIENDAS LA 200 , C.A","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"SURTIDORA DON VENANCIO C.A.","t":"Abasto","c":"Tradicional","z":"Norte","e":"Zulia (VE)"},{"n":"SURTIDORA LOS CACHAQUITOS C.A.","t":"Mayorista","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"TE LO TENGO GT C.A.","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"TIENDA BETEL 2022 C.A.","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"TIENDA EL MUNDO DE LAS GOMITAS C.A.","t":"Confiteria","c":"Moderno","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"TIENDA MIRANDA 168 C.A.","t":"Supermercado","c":"Moderno","z":"COL - 1","e":"Zulia (VE)"},{"n":"TU COMPRA SAN JACINTO C.A.","t":"Supermercado","c":"Moderno","z":"Norte","e":"Zulia (VE)"},{"n":"TU MERCADO FACIL, C.A","t":"Supermercado","c":"Moderno","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"V X 3 SUPERMARKET C.A.","t":"Supermercado","c":"Moderno","z":"Perija","e":"Zulia (VE)"},{"n":"VARIEDAD ARIZA ORTEGA C.A.","t":"Mayorista","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"VARIEDADES DIOS ES MI LUZ C.A.","t":"Abasto","c":"Tradicional","z":"COL - 1","e":"Zulia (VE)"},{"n":"VARIEDADES LA GRANVENEZUELA, C.A","t":"Abasto","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"VARIEDADES LAS TRES KKK C.A.","t":"Abasto","c":"Tradicional","z":"COL -2","e":"Zulia (VE)"},{"n":"VARIEDADES LEO C.A.","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"VARIEDADES LUPE COMPAÑIA ANONIMA","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"VARIEDADES YOL 2022 C.A.","t":"Abasto","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"VICTOR SEGUNDO MENDEZ VILLALOBOS","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"VIVA ELECTRONICS 2020 C.A.","t":"","c":"Tradicional","z":"","e":"Zulia (VE)"},{"n":"VIVERES DE CANDIDO C.A.","t":"Supermercado","c":"Moderno","z":"Cuentas claves","e":"Zulia (VE)"},{"n":"VIVERES FRUTAS Y VERDURAS EL TATO C.A.","t":"","c":"","z":"","e":"Zulia (VE)"},{"n":"VIVERES GENESIS C.A.","t":"Supermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"VIVERES HONG FUNG , C.A","t":"Supermercado","c":"Moderno","z":"Oeste","e":"Zulia (VE)"},{"n":"VIVERES JF 1 C.A.","t":"Abasto","c":"Tradicional","z":"Mara","e":"Zulia (VE)"},{"n":"VIVERES LACTEOS CHARCUTERIA Y PANIFICADORA LA GRAN FORTUNA C.A.","t":"Supermercado","c":"Moderno","z":"Noroeste","e":"Zulia (VE)"},{"n":"VIVERES MELEAN C.A","t":"Supermercado","c":"Moderno","z":"Perija","e":"Zulia (VE)"},{"n":"VIVERES NUEVA VICTORIA C.A.","t":"Supermercado","c":"Moderno","z":"San francisco","e":"Zulia (VE)"},{"n":"VIVERES Y CHARCUTERIA PORLAMAR C.A.","t":"Abasto","c":"Tradicional","z":"Mcbo Sur","e":"Zulia (VE)"},{"n":"VÍVERES Y CHARCUTERÍA LA ESQUINA DE PUNTA DE MATA, C.A","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"WILLIAMNA SCARLE QUIVERA MILLANO","t":"Abasto","c":"Tradicional","z":"Perija","e":"Zulia (VE)"},{"n":"YOSELIN DEL VALLE BARRIOS SEGOVIA","t":"Abasto","c":"Tradicional","z":"Oeste","e":"Zulia (VE)"},{"n":"YUSEF ATA MENDEZ","t":"Supermercado","c":"Moderno","z":"Falcon","e":"FALCON (VE)"},{"n":"YUSNEIBI ELENA QUINTERO MANZANILLO","t":"Abasto","c":"Tradicional","z":"Noroeste","e":"Zulia (VE)"},{"n":"ZAGHLOUL PARAGUANA C.A.","t":"Supermercado","c":"Moderno","z":"Falcon","e":"Zulia (VE)"}],"zonas":["COL - 1","COL -2","Corporativo","Cuentas claves","Falcon","La concepcion","Lara","Mara","Mcbo Sur","Noroeste","Norte","Oeste","Perija","San francisco","Trujillo"],"estados":["CARACAS (VE)","FALCON (VE)","LARA (VE)","TRUJILLO (VE)","Zulia (VE)"]};
+
+let catalog = {
+  marcas: SEED_CATALOG.marcas,
+  clientes: SEED_CATALOG.clientes, // {n,t,c,z,e}
+  zonas: SEED_CATALOG.zonas,
+  customClientes: [] // clientes nuevos agregados en campo: {nombre, zona}
+};
+let log = [];
+
+let state = { clienteObj:null, clienteManual:false, zonaManual:null, marca:null, producto:null, tipo:null, severidad:null, fotos:[], geo:null };
+
+const $ = id => document.getElementById(id);
+
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+function mergeExtra(extra){
+  if(!extra) return;
+  if(extra.customClientes) catalog.customClientes = extra.customClientes;
+  if(extra.marcas){
+    Object.keys(extra.marcas).forEach(m=>{
+      if(!catalog.marcas[m]) catalog.marcas[m] = [];
+      extra.marcas[m].forEach(p=>{ if(!catalog.marcas[m].includes(p)) catalog.marcas[m].push(p); });
+    });
+  }
+  if(extra.zonas){
+    extra.zonas.forEach(z=>{ if(!catalog.zonas.includes(z)) catalog.zonas.push(z); });
+  }
+}
+
+function loadData(){
+  $('marcasCount').textContent = Object.keys(catalog.marcas).length;
+  $('marcaTotal').textContent = '· ' + Object.keys(catalog.marcas).length + ' marcas';
+  renderZonaChips();
+  renderMarcas();
+  renderHistorial();
+
+  onSnapshot(catalogoExtraRef, (snap)=>{
+    if(snap.exists()){
+      mergeExtra(snap.data());
+      $('marcasCount').textContent = Object.keys(catalog.marcas).length;
+      $('marcaTotal').textContent = '· ' + Object.keys(catalog.marcas).length + ' marcas';
+      renderZonaChips();
+      renderMarcas($('marcaSearch').value);
+      if(state.marca) renderProductos($('productoSearch').value);
+    }
+  }, (err)=>{ console.error('catalogo-extra', err); toast('Sin conexión con la base compartida'); });
+
+  const q = query(incidenciasCol, orderBy('ts','desc'));
+  onSnapshot(q, (snap)=>{
+    log = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    renderHistorial();
+  }, (err)=>{ console.error('incidencias', err); toast('Sin conexión con la base compartida'); });
+}
+
+async function persistNuevaMarca(marca, producto){
+  try{ await setDoc(catalogoExtraRef, { marcas: { [marca]: arrayUnion(producto) } }, { merge:true }); }
+  catch(e){ console.error(e); toast('No se pudo sincronizar la marca nueva'); }
+}
+async function persistNuevaZona(zona){
+  try{ await setDoc(catalogoExtraRef, { zonas: arrayUnion(zona) }, { merge:true }); }
+  catch(e){ console.error(e); toast('No se pudo sincronizar la zona nueva'); }
+}
+async function persistNuevoCliente(nombre, zona){
+  try{ await setDoc(catalogoExtraRef, { customClientes: arrayUnion({nombre, zona}) }, { merge:true }); }
+  catch(e){ console.error(e); toast('No se pudo sincronizar el cliente nuevo'); }
+}
+
+// ---------- Cliente autocomplete ----------
+function allClientes(){
+  return catalog.clientes.concat(catalog.customClientes.map(c=>({n:c.nombre, t:'', c:'', z:c.zona, e:''})));
+}
+
+const clienteInput = $('cliente');
+const clienteResults = $('clienteResults');
+
+clienteInput.addEventListener('input', ()=>{
+  state.clienteObj = null;
+  $('clientCard').classList.remove('show');
+  const q = clienteInput.value.trim().toLowerCase();
+  checkReady();
+  if(q.length < 2){ clienteResults.classList.remove('show'); return; }
+  const matches = allClientes().filter(c=>c.n.toLowerCase().includes(q)).slice(0,8);
+  clienteResults.innerHTML = '';
+  if(matches.length===0){
+    clienteResults.innerHTML = '<div class="combo-empty">Sin coincidencias. Usá "Este cliente no está en la lista".</div>';
+  }else{
+    matches.forEach(c=>{
+      const div = document.createElement('div');
+      div.className='combo-item';
+      div.innerHTML = `<div class="nm">${c.n}</div><div class="meta">${[c.t,c.c,c.z,c.e].filter(Boolean).join(' · ')}</div>`;
+      div.onclick = ()=> selectCliente(c);
+      clienteResults.appendChild(div);
+    });
+  }
+  clienteResults.classList.add('show');
+});
+document.addEventListener('click', (e)=>{
+  if(!e.target.closest('.combo')) clienteResults.classList.remove('show');
+});
+
+function selectCliente(c){
+  state.clienteObj = c;
+  clienteInput.value = c.n;
+  clienteResults.classList.remove('show');
+  $('ccName').textContent = c.n;
+  $('ccZona').textContent = c.z || 'Sin zona';
+  $('ccEstado').textContent = c.e || '—';
+  $('ccCanal').textContent = c.c || '—';
+  $('ccTipo').textContent = c.t || '—';
+  $('ccEstado').style.display = c.e ? 'inline-block' : 'none';
+  $('ccCanal').style.display = c.c ? 'inline-block' : 'none';
+  $('ccTipo').style.display = c.t ? 'inline-block' : 'none';
+  $('clientCard').classList.add('show');
+  checkReady();
+}
+
+$('toggleManual').onclick = ()=>{
+  const mz = $('manualZone');
+  mz.classList.toggle('show');
+  state.clienteManual = mz.classList.contains('show');
+  $('toggleManual').textContent = state.clienteManual ? '– Ocultar selección manual de zona' : '+ Este cliente no está en la lista';
+  checkReady();
+};
+
+function renderZonaChips(){
+  const box = $('zonaChips');
+  box.innerHTML = '';
+  catalog.zonas.forEach(z=>{
+    const c = document.createElement('div');
+    c.className = 'chip'; c.textContent = z;
+    c.onclick = ()=>{ state.zonaManual = z; renderZonaChips(); checkReady(); };
+    if(state.zonaManual===z) c.classList.add('sel');
+    box.appendChild(c);
+  });
+  const add = document.createElement('div');
+  add.className='chip add'; add.textContent='+ Nueva zona';
+  add.onclick = ()=>{
+    const nz = prompt('Nombre de la nueva zona / ruta:');
+    if(nz && nz.trim()){ catalog.zonas.push(nz.trim()); state.zonaManual=nz.trim(); persistNuevaZona(nz.trim()); renderZonaChips(); checkReady(); }
+  };
+  box.appendChild(add);
+}
+
+// ---------- Marca / Producto ----------
+function renderMarcas(filter){
+  const box = $('marcaChips');
+  box.innerHTML = '';
+  const f = (filter||'').toLowerCase();
+  Object.keys(catalog.marcas).filter(m=>m.toLowerCase().includes(f)).forEach(m=>{
+    const c = document.createElement('div');
+    c.className='chip'; c.textContent=m;
+    c.onclick = ()=>{ state.marca=m; state.producto=null; renderMarcas($('marcaSearch').value); renderProductos(); checkReady(); };
+    if(state.marca===m) c.classList.add('sel');
+    box.appendChild(c);
+  });
+  const add = document.createElement('div');
+  add.className='chip add'; add.textContent='+ Nueva marca';
+  add.onclick = ()=>{
+    const nm = prompt('Nombre de la nueva marca:');
+    if(nm && nm.trim() && !catalog.marcas[nm.trim()]){
+      catalog.marcas[nm.trim()] = [];
+      state.marca = nm.trim(); state.producto=null;
+      setDoc(catalogoExtraRef, { marcas: { [nm.trim()]: [] } }, { merge:true }).catch(console.error);
+      renderMarcas(); renderProductos(); checkReady();
+      $('marcasCount').textContent = Object.keys(catalog.marcas).length;
+      $('marcaTotal').textContent = '· ' + Object.keys(catalog.marcas).length + ' marcas';
+    }
+  };
+  box.appendChild(add);
+}
+$('marcaSearch').addEventListener('input', (e)=>renderMarcas(e.target.value));
+
+function renderProductos(filter){
+  const box = $('productoChips');
+  box.innerHTML = '';
+  if(!state.marca){
+    box.innerHTML = '<span class="hint">Elegí una marca primero.</span>';
+    $('productoSearchWrap').style.display = 'none';
+    return;
+  }
+  $('productoSearchWrap').style.display = 'block';
+  const f = (filter||'').toLowerCase();
+  (catalog.marcas[state.marca]||[]).filter(p=>p.toLowerCase().includes(f)).forEach(p=>{
+    const c = document.createElement('div');
+    c.className='chip'; c.textContent=p;
+    c.onclick = ()=>{ state.producto=p; renderProductos($('productoSearch').value); checkReady(); };
+    if(state.producto===p) c.classList.add('sel');
+    box.appendChild(c);
+  });
+  const add = document.createElement('div');
+  add.className='chip add'; add.textContent='+ Nuevo producto';
+  add.onclick = ()=>{
+    const np = prompt('Nombre del nuevo producto para "'+state.marca+'":');
+    if(np && np.trim()){
+      catalog.marcas[state.marca].push(np.trim());
+      state.producto = np.trim();
+      persistNuevaMarca(state.marca, np.trim());
+      renderProductos(); checkReady();
+    }
+  };
+  box.appendChild(add);
+}
+$('productoSearch').addEventListener('input', (e)=>renderProductos(e.target.value));
+
+// Incident type stamps
+document.querySelectorAll('.stamp').forEach(st=>{
+  st.onclick = ()=>{
+    document.querySelectorAll('.stamp').forEach(s=>s.classList.remove('sel'));
+    document.querySelectorAll('.conditional').forEach(c=>c.classList.remove('show'));
+    st.classList.add('sel');
+    state.tipo = st.dataset.type;
+    $('cond-'+state.tipo).classList.add('show');
+    checkReady();
+  };
+});
+document.querySelectorAll('.sev').forEach(s=>{
+  s.onclick = ()=>{
+    document.querySelectorAll('.sev').forEach(x=>x.classList.remove('sel'));
+    s.classList.add('sel');
+    state.severidad = s.dataset.lvl;
+  };
+});
+
+// Photos
+$('photoInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  if(state.fotos.length>=3){ toast('Máximo 3 fotos'); e.target.value=''; return; }
+  const reader = new FileReader();
+  reader.onload = ()=>{ state.fotos.push(reader.result); renderPhotos(); checkReady(); };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+function renderPhotos(){
+  const row = $('photoRow');
+  row.querySelectorAll('.photo-thumb').forEach(t=>t.remove());
+  state.fotos.forEach((src, i)=>{
+    const div = document.createElement('div');
+    div.className='photo-thumb';
+    div.innerHTML = `<img src="${src}"><button type="button" class="rm">×</button>`;
+    div.querySelector('.rm').onclick = ()=>{ state.fotos.splice(i,1); renderPhotos(); checkReady(); };
+    row.insertBefore(div, row.firstChild);
+  });
+  row.querySelector('.photo-add').style.display = state.fotos.length>=3 ? 'none' : 'flex';
+}
+
+// Geolocation
+$('geoBtn').onclick = ()=>{
+  if(!navigator.geolocation){ toast('Geolocalización no disponible'); return; }
+  $('geoBtn').textContent = '📍 Ubicando...';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    state.geo = { lat: pos.coords.latitude.toFixed(5), lon: pos.coords.longitude.toFixed(5) };
+    $('geoBtn').textContent = `📍 Ubicación capturada (${state.geo.lat}, ${state.geo.lon})`;
+    $('geoBtn').classList.add('ok');
+  }, ()=>{
+    $('geoBtn').textContent = '📍 Capturar ubicación actual';
+    toast('No se pudo obtener la ubicación');
+  });
+};
+
+function currentZona(){
+  if(state.clienteObj) return state.clienteObj.z || '';
+  if(state.clienteManual) return state.zonaManual;
+  return null;
+}
+
+function checkReady(){
+  const clienteOk = clienteInput.value.trim() && (state.clienteObj || (state.clienteManual && state.zonaManual));
+  const ok = clienteOk && state.marca && state.producto && state.tipo;
+  $('saveBtn').disabled = !ok;
+}
+
+// Save incident
+$('saveBtn').onclick = async ()=>{
+  $('saveBtn').disabled = true;
+  $('saveBtn').textContent = 'Guardando...';
+  try{
+    const zona = currentZona();
+    const clienteNombre = clienteInput.value.trim();
+    const fotosComprimidas = await Promise.all(state.fotos.map(f=>comprimirFoto(f)));
+    const entry = {
+      fecha: $('fecha').value,
+      cliente: clienteNombre,
+      zona: zona || '',
+      estado: state.clienteObj ? (state.clienteObj.e||'') : '',
+      canal: state.clienteObj ? (state.clienteObj.c||'') : '',
+      marca: state.marca,
+      producto: state.producto,
+      tipo: state.tipo,
+      detalle: buildDetalle(),
+      cantidad: $('cantidad').value || '',
+      notas: $('notas').value || '',
+      fotos: fotosComprimidas,
+      geo: state.geo,
+      ts: new Date().toISOString()
+    };
+    await addDoc(incidenciasCol, entry);
+    if(state.clienteManual && !allClientes().some(c=>c.n.toLowerCase()===clienteNombre.toLowerCase())){
+      catalog.customClientes.push({nombre: clienteNombre, zona: zona||''});
+      persistNuevoCliente(clienteNombre, zona||'');
+    }
+    toast('Incidencia guardada ✓');
+    resetForNext();
+  }catch(e){
+    console.error(e);
+    toast('No se pudo guardar. Revisá tu conexión.');
+  }
+  $('saveBtn').textContent = 'Guardar incidencia';
+  checkReady();
+};
+
+function buildDetalle(){
+  if(state.tipo==='averiado') return { tipoDano: $('tipoDano').value, severidad: state.severidad || 'sin especificar' };
+  if(state.tipo==='vencido') return { fechaVenc: $('fechaVenc').value, lote: $('lote').value };
+  if(state.tipo==='faltante') return { cantFaltante: $('cantFaltante').value };
+  if(state.tipo==='otro') return { descripcion: $('otroDesc').value };
+  return {};
+}
+
+function resetForNext(){
+  clienteInput.value = '';
+  state.clienteObj=null; state.clienteManual=false; state.zonaManual=null;
+  state.marca=null; state.producto=null; state.tipo=null; state.severidad=null; state.fotos=[]; state.geo=null;
+  $('clientCard').classList.remove('show');
+  $('manualZone').classList.remove('show');
+  $('toggleManual').textContent = '+ Este cliente no está en la lista';
+  document.querySelectorAll('.stamp').forEach(s=>s.classList.remove('sel'));
+  document.querySelectorAll('.conditional').forEach(c=>c.classList.remove('show'));
+  document.querySelectorAll('.sev').forEach(s=>s.classList.remove('sel'));
+  $('cantidad').value=''; $('notas').value=''; $('tipoDano').selectedIndex=0;
+  $('fechaVenc').value=''; $('lote').value=''; $('cantFaltante').value=''; $('otroDesc').value='';
+  $('marcaSearch').value=''; $('productoSearch').value='';
+  $('geoBtn').textContent = '📍 Capturar ubicación actual';
+  $('geoBtn').classList.remove('ok');
+  renderZonaChips(); renderMarcas(); renderProductos(); renderPhotos();
+  checkReady();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function tipoLabel(t){ return {averiado:'Averiado', vencido:'Vencido', faltante:'Faltante', otro:'Otro'}[t] || t; }
+
+function renderHistorial(){
+  const hoy = new Date().toISOString().slice(0,10);
+  $('contadorHoy').textContent = log.filter(e=>e.fecha===hoy).length;
+  const list = $('histList');
+  if(log.length===0){
+    list.innerHTML = '<div class="hist-empty">Todavía no registraste incidencias.</div>';
+    return;
+  }
+  list.innerHTML = '';
+  log.forEach(e=>{
+    const div = document.createElement('div');
+    div.className='hist-item';
+    const thumb = e.fotos && e.fotos[0] ? `<img class="hist-thumb" src="${e.fotos[0]}">` : `<div class="hist-thumb"></div>`;
+    div.innerHTML = `
+      ${thumb}
+      <div class="hist-body">
+        <div class="hist-top">
+          <span class="hist-cliente">${e.cliente}</span>
+          <span class="badge ${e.tipo}">${tipoLabel(e.tipo)}</span>
+        </div>
+        <div class="hist-meta">${e.marca} · ${e.producto} · ${e.zona} · ${e.fecha}</div>
+        <button type="button" class="hist-del">Eliminar</button>
+      </div>`;
+    div.querySelector('.hist-del').onclick = async ()=>{
+      try{ await deleteDoc(doc(db, 'incidencias', e.id)); }
+      catch(err){ console.error(err); toast('No se pudo eliminar'); }
+    };
+    list.appendChild(div);
+  });
+}
+
+$('toggleHist').onclick = ()=>{
+  const sec = $('histSection');
+  sec.style.display = sec.style.display==='block' ? 'none' : 'block';
+  if(sec.style.display==='block') sec.scrollIntoView({behavior:'smooth'});
+};
+
+$('exportBtn').onclick = ()=>{
+  if(log.length===0){ toast('No hay incidencias para exportar'); return; }
+  const headers = ['fecha','cliente','zona','estado','canal','marca','producto','tipo','detalle','cantidad','notas','lat','lon'];
+  const rows = log.map(e=>[
+    e.fecha, e.cliente, e.zona, e.estado, e.canal, e.marca, e.producto, tipoLabel(e.tipo),
+    JSON.stringify(e.detalle).replace(/"/g,''), e.cantidad, (e.notas||'').replace(/,/g,';'),
+    e.geo?e.geo.lat:'', e.geo?e.geo.lon:''
+  ]);
+  const csv = [headers.join(','), ...rows.map(r=>r.map(v=>`"${v}"`).join(','))].join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'incidencias_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+// init
+$('fecha').value = new Date().toISOString().slice(0,10);
+$('hoyLabel').textContent = new Date().toLocaleDateString('es-ES',{weekday:'short', day:'2-digit', month:'short'});
+renderPhotos();
+loadData();
+</script>
+</body>
+</html>
